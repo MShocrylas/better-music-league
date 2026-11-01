@@ -13,8 +13,14 @@ The voting page is probably the most important one, start with that
 - Submit vote for a user
 
 ### Schema
-User(id, username)
-Round(id, theme, users)
-Song(id, round_id, submitter_user, title, artist, url)
-#RoundVotes(id, round_id, user_id, )
-Vote(round_id, song_id, user_id, rank)
+Users(id, username)
+Leagues(id, name)
+Rounds(id, theme)
+Songs(id, title, artist, url)
+Submissions(id, user, round, song)
+Votes(round_id, song_id, user_id, song_rank)
+
+# TODO:
+- Add `goose` for sql migrations management (only really important once you have a persistent db)
+    - Goose is pretty simple to add in, just switching away from a schema.sql file to a schema directory with numbered files. And adding Up and Down comments to the sql files.
+
