@@ -23,4 +23,5 @@ Votes(round_id, song_id, user_id, song_rank)
 # TODO:
 - Add `goose` for sql migrations management (only really important once you have a persistent db)
     - Goose is pretty simple to add in, just switching away from a schema.sql file to a schema directory with numbered files. And adding Up and Down comments to the sql files.
-
+- Maybe look into using [Bun](https://bun.uptrace.dev/guide/#quick-start) as a lightweight ORM if getting sick of writing sql 
+- Add constraint in Go code that only members of a league can submit songs to, or vote in, that league’s rounds (This is not constrained by sql schema)
