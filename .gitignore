@@ -1,0 +1,32 @@
+# SQLite databases and sidecar files
+*.db
+*.db-wal
+*.db-shm
+*.db-journal
+*.sqlite
+*.sqlite3
+
+# Build output
+/bin/
+/dist/
+/music-league
+*.exe
+
+# Test and coverage output
+*.test
+*.out
+coverage.html
+
+# Environment and secrets
+.env
+.env.*
+!.env.example
+
+# Local config and data
+/data/
+/tmp/
+
+# Editor and OS files
+*.swp
+.DS_Store
+Thumbs.db
