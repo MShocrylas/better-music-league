@@ -42,9 +42,9 @@ CREATE TABLE songs (
 
 CREATE TABLE submissions (
     submission_id INTEGER PRIMARY KEY,
+    song_id INTEGER NOT NULL REFERENCES songs(song_id) ON DELETE RESTRICT,
     -- The user who submitted this song
     user_id INTEGER NOT NULL REFERENCES users(user_id) ON DELETE RESTRICT,
-    song_id INTEGER NOT NULL REFERENCES songs(song_id) ON DELETE RESTRICT,
     round_id INTEGER NOT NULL REFERENCES rounds(round_id) ON DELETE CASCADE,
     -- ISO-8601
     created_at TEXT NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M:%SZ', 'now')),

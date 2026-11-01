@@ -37,8 +37,8 @@ type Song struct {
 
 type Submission struct {
 	SubmissionID int64
-	UserID       int64
 	SongID       int64
+	UserID       int64
 	RoundID      int64
 	CreatedAt    string
 }
