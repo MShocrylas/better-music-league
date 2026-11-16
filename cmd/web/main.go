@@ -62,21 +62,14 @@ func run(logger *slog.Logger) error {
 
 	a := &app{q: db.New(conn), logger: logger}
 
-	mux := http.NewServeMux()
-	mux.HandleFunc("GET /rounds/{id}", a.showRound)
-
 	srv := &http.Server{
 		Addr:         ":8080",
-		Handler:      mux,
+		Handler:      a.routes(),
 		ReadTimeout:  5 * time.Second,
 		WriteTimeout: 10 * time.Second,
 	}
 	logger.Info("listening on:", "addr", srv.Addr)
 	return srv.ListenAndServe()
-}
-
-func (a *app) showRound(w http.ResponseWriter, r *http.Request) {
-	w.Write([]byte("round " + r.PathValue("id")))
 }
 
 func migrate(db *sql.DB) error {
