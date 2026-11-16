@@ -1,22 +1,22 @@
-CREATE TABLE users (
+CREATE TABLE IF NOT EXISTS users (
     user_id INTEGER PRIMARY KEY,
     username TEXT NOT NULL UNIQUE COLLATE nocase
 ) STRICT;
 
-CREATE TABLE leagues (
+CREATE TABLE IF NOT EXISTS leagues (
     league_id INTEGER PRIMARY KEY,
     name TEXT NOT NULL
 ) STRICT;
 
-CREATE TABLE leagues_users (
+CREATE TABLE IF NOT EXISTS leagues_users (
     league_id INTEGER NOT NULL REFERENCES leagues(league_id) ON DELETE CASCADE,
     user_id INTEGER NOT NULL REFERENCES users(user_id) ON DELETE CASCADE,
     role TEXT NOT NULL DEFAULT 'member' CHECK (role IN ('admin', 'member')),
     PRIMARY KEY (league_id, user_id)
 ) STRICT;
-CREATE INDEX idx_leagues_users_user_id ON leagues_users (user_id);
+CREATE INDEX IF NOT EXISTS idx_leagues_users_user_id ON leagues_users (user_id);
 
-CREATE TABLE rounds (
+CREATE TABLE IF NOT EXISTS rounds (
     round_id INTEGER PRIMARY KEY,
     league_id INTEGER NOT NULL REFERENCES leagues(league_id) ON DELETE CASCADE,
     theme TEXT NOT NULL,
@@ -32,7 +32,7 @@ CREATE TABLE rounds (
     UNIQUE (league_id, position)
 ) STRICT;
 
-CREATE TABLE songs (
+CREATE TABLE IF NOT EXISTS songs (
     song_id INTEGER PRIMARY KEY,
     title TEXT NOT NULL,
     artist TEXT NOT NULL,
@@ -40,7 +40,7 @@ CREATE TABLE songs (
     UNIQUE (title, artist)
 ) STRICT;
 
-CREATE TABLE submissions (
+CREATE TABLE IF NOT EXISTS submissions (
     submission_id INTEGER PRIMARY KEY,
     song_id INTEGER NOT NULL REFERENCES songs(song_id) ON DELETE RESTRICT,
     -- The user who submitted this song
@@ -53,7 +53,7 @@ CREATE TABLE submissions (
     UNIQUE (submission_id, round_id) -- Exists as target for votes composite FK
 ) STRICT;
 
-CREATE TABLE votes (
+CREATE TABLE IF NOT EXISTS votes (
     vote_id INTEGER PRIMARY KEY,
     user_id INTEGER NOT NULL REFERENCES users(user_id) ON DELETE RESTRICT,
     submission_id INTEGER NOT NULL,
@@ -70,7 +70,7 @@ CREATE TABLE votes (
     UNIQUE (user_id, round_id, song_rank)
 ) STRICT;
 
-CREATE TRIGGER votes_no_self_vote
+CREATE TRIGGER IF NOT EXISTS votes_no_self_vote
 BEFORE INSERT ON votes
 WHEN
     new.user_id
