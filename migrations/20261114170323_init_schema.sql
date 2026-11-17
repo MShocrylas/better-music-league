@@ -83,12 +83,12 @@ END;
 -- +goose statementend
 
 -- +goose Down
-DROP TABLE users;
-DROP TABLE leagues;
-DROP INDEX idx_leagues_users_user_id;
-DROP TABLE leagues_users;
-DROP TABLE rounds;
-DROP TABLE songs;
-DROP TABLE submissions;
-DROP TABLE votes;
 DROP TRIGGER votes_no_self_vote;
+DROP TABLE votes;
+DROP TABLE submissions;
+DROP TABLE songs;
+DROP TABLE rounds;
+DROP TABLE leagues_users;
+DROP INDEX idx_leagues_users_user_id;
+DROP TABLE leagues;
+DROP TABLE users;
