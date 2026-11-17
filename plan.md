@@ -23,3 +23,9 @@ Votes(round_id, song_id, user_id, song_rank)
 # TODO:
 - Maybe look into using [Bun](https://bun.uptrace.dev/guide/#quick-start) as a lightweight ORM if getting sick of writing sql 
 - Add constraint in Go code that only members of a league can submit songs to, or vote in, that league’s rounds (This is not constrained by sql schema)
+
+
+# Steps:
+- templ for html in the web pages
+- enhance the templ pages with [htmx](https://templ.guide/server-side-rendering/htmx)
+

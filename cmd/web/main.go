@@ -43,6 +43,7 @@ func run(logger *slog.Logger) error {
 	q.Add("_pragma", "foreign_keys(1)")
 	q.Add("_pragma", "busy_timeout(5000)")
 	q.Add("_pragma", "journal_mode(WAL)")
+	q.Add("_pragma", "synchronous(NORMAL)")
 
 	dsn := "file:" + *path + "?" + q.Encode()
 	conn, err := sql.Open("sqlite", dsn)
