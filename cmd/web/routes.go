@@ -16,8 +16,12 @@ func (app *app) routes() http.Handler {
 	// TODO: add auth
 	// protected := dynamic.Append(<authentication>)
 
-	mux.Handle("GET /rounds/{id}", dynamic.ThenFunc(app.showRound))
+	mux.Handle("GET /leagues", dynamic.ThenFunc(app.listLeagues))
 	mux.Handle("GET /leagues/{id}", dynamic.ThenFunc(app.showLeague))
+	mux.Handle("POST /leagues", dynamic.ThenFunc(app.createLeague))
+
+	mux.Handle("GET /rounds", dynamic.ThenFunc(app.listRounds))
+	mux.Handle("GET /rounds/{id}", dynamic.ThenFunc(app.showRound))
 
 	return mux
 }
