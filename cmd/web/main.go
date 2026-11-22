@@ -1,13 +1,16 @@
 package main
 
 import (
+	"context"
 	"database/sql"
 	_ "embed"
 	"flag"
+	"fmt"
 	"log/slog"
 	"net/http"
 	"net/url"
 	"os"
+	"strings"
 	"time"
 
 	"github.com/pressly/goose/v3"
@@ -18,6 +21,21 @@ import (
 	"mshocrylas.com/music-league/migrations"
 )
 
+type gooseSlogAdapter struct {
+	logger *slog.Logger
+}
+
+func (s *gooseSlogAdapter) Printf(format string, v ...any) {
+	msg := strings.TrimRight(fmt.Sprintf(format, v...), "\n")
+	s.logger.Info(msg)
+}
+
+func (s *gooseSlogAdapter) Fatalf(format string, v ...any) {
+	msg := strings.TrimRight(fmt.Sprintf(format, v...), "\n")
+	s.logger.Error(msg)
+	os.Exit(1)
+}
+
 type app struct {
 	q      *db.Queries
 	logger *slog.Logger
@@ -25,8 +43,8 @@ type app struct {
 
 func main() {
 	logger := slog.New(slog.NewTextHandler(os.Stdout, &slog.HandlerOptions{
-		Level:     slog.LevelDebug,
-		AddSource: true,
+		Level: slog.LevelDebug,
+		// AddSource: true,
 	}))
 
 	if err := run(logger); err != nil {
@@ -57,7 +75,7 @@ func run(logger *slog.Logger) error {
 		return err
 	}
 
-	if err := migrate(conn); err != nil {
+	if err := migrate(conn, logger); err != nil {
 		return err
 	}
 
@@ -73,10 +91,21 @@ func run(logger *slog.Logger) error {
 	return srv.ListenAndServe()
 }
 
-func migrate(db *sql.DB) error {
-	goose.SetBaseFS(migrations.FS)
-	if err := goose.SetDialect("sqlite3"); err != nil {
+func migrate(db *sql.DB, logger *slog.Logger) error {
+	gooseLogger := &gooseSlogAdapter{
+		logger: logger.With(slog.String("component", "goose")),
+	}
+
+	provider, err := goose.NewProvider(
+		goose.DialectSQLite3,
+		db,
+		migrations.FS,
+		goose.WithLogger(gooseLogger),
+		goose.WithVerbose(true),
+	)
+	if err != nil {
 		return err
 	}
-	return goose.Up(db, ".")
+	_, err = provider.Up(context.Background())
+	return err
 }
