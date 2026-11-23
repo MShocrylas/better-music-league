@@ -5,12 +5,10 @@ import (
 	"database/sql"
 	_ "embed"
 	"flag"
-	"fmt"
 	"log/slog"
 	"net/http"
 	"net/url"
 	"os"
-	"strings"
 	"time"
 
 	"github.com/pressly/goose/v3"
@@ -20,21 +18,6 @@ import (
 	"mshocrylas.com/music-league/internal/db"
 	"mshocrylas.com/music-league/migrations"
 )
-
-type gooseSlogAdapter struct {
-	logger *slog.Logger
-}
-
-func (s *gooseSlogAdapter) Printf(format string, v ...any) {
-	msg := strings.TrimRight(fmt.Sprintf(format, v...), "\n")
-	s.logger.Info(msg)
-}
-
-func (s *gooseSlogAdapter) Fatalf(format string, v ...any) {
-	msg := strings.TrimRight(fmt.Sprintf(format, v...), "\n")
-	s.logger.Error(msg)
-	os.Exit(1)
-}
 
 type app struct {
 	q      *db.Queries
@@ -58,10 +41,11 @@ func run(logger *slog.Logger) error {
 	flag.Parse()
 
 	q := url.Values{}
-	q.Add("_pragma", "foreign_keys(1)")
-	q.Add("_pragma", "busy_timeout(5000)")
-	q.Add("_pragma", "journal_mode(WAL)")
-	q.Add("_pragma", "synchronous(NORMAL)")
+	q.Add("_foreign_keys", "true")
+	q.Add("_busy_timeout", "5000")
+	q.Add("_journal_mode", "WAL")
+	q.Add("_synchronous", "NORMAL")
+	q.Add("_txlock", "IMMEDIATE")
 
 	dsn := "file:" + *path + "?" + q.Encode()
 	conn, err := sql.Open("sqlite", dsn)
@@ -69,8 +53,8 @@ func run(logger *slog.Logger) error {
 		return err
 	}
 	defer conn.Close()
-	conn.SetMaxOpenConns(1) // avoids "database is locked" ??
 
+	// Test the connection before using it for anything
 	if err := conn.Ping(); err != nil {
 		return err
 	}
@@ -87,7 +71,7 @@ func run(logger *slog.Logger) error {
 		ReadTimeout:  5 * time.Second,
 		WriteTimeout: 10 * time.Second,
 	}
-	logger.Info("listening on:", "addr", srv.Addr)
+	logger.Info("Server listening", "addr", srv.Addr)
 	return srv.ListenAndServe()
 }
 
