@@ -2,19 +2,33 @@ package main
 
 import (
 	"database/sql"
+	"errors"
 	"fmt"
 	"net/http"
 	"strconv"
+	"strings"
+	"time"
 
 	"mshocrylas.com/music-league/internal/db"
+	"mshocrylas.com/music-league/internal/validator"
+	"mshocrylas.com/music-league/internal/views"
 )
 
 func (a *app) home(w http.ResponseWriter, r *http.Request) {
-	w.Write([]byte("hi"))
+	views.Base("Home").Render(r.Context(), w)
 }
 
-func (a *app) userLogin(w http.ResponseWriter, r *http.Request) {
-	w.Write([]byte("you should log in but you can't yet"))
+func (a *app) showLogin(w http.ResponseWriter, r *http.Request) {
+	views.Login().Render(r.Context(), w)
+}
+
+func (a *app) login(w http.ResponseWriter, r *http.Request) {
+	if err := r.ParseForm(); err != nil {
+		a.serverError(w, r, err)
+		return
+	}
+	username := r.PostForm.Get("username")
+	fmt.Fprintf(w, "Hello %s", username)
 }
 
 func (a *app) createLeague(w http.ResponseWriter, r *http.Request) {
@@ -31,52 +45,99 @@ func (a *app) createLeague(w http.ResponseWriter, r *http.Request) {
 func (a *app) listLeagues(w http.ResponseWriter, r *http.Request) {
 	leagues, err := a.q.ListLeagues(r.Context())
 	if err != nil {
-		a.logger.Error("oops", "error", err)
 		a.clientError(w, http.StatusNotFound)
 		return
 	}
 
-	w.Write([]byte("leagues: "))
-	for _, l := range leagues {
-		w.Write([]byte(strconv.Itoa(int(l.LeagueID)) + "\n"))
-	}
+	views.LeagueList(leagues).Render(r.Context(), w)
 }
 
 func (a *app) showLeague(w http.ResponseWriter, r *http.Request) {
-	intID, err := strconv.ParseInt(r.PathValue("id"), 10, 64)
+	league, ok := a.leagueFromRequest(w, r)
+	if !ok {
+		return
+	}
+
+	a.renderLeague(w, r, http.StatusOK, league, views.RoundForm{})
+}
+
+func (a *app) renderLeague(w http.ResponseWriter, r *http.Request, status int, league db.League, form views.RoundForm) {
+	rounds, err := a.q.ListRoundsByLeague(r.Context(), league.LeagueID)
 	if err != nil {
 		a.serverError(w, r, err)
 		return
 	}
-	league, err := a.q.GetLeague(r.Context(), intID)
-	if err != nil {
-		a.clientError(w, http.StatusNotFound)
-		return
-	}
-	w.Write([]byte("league: "))
-	w.Write([]byte(strconv.Itoa(int(league.LeagueID)) + " " + league.Name))
+
+	// Call write header just before rendering, so it is after any possible errors that would want to set the header instead.
+	w.WriteHeader(status)
+	views.League(views.LeaguePage{
+		League: league,
+		Rounds: rounds,
+		Form:   form,
+	}).Render(r.Context(), w)
 }
 
 func (a *app) createRound(w http.ResponseWriter, r *http.Request) {
-	leagueID, err := strconv.ParseInt(r.PathValue("id"), 10, 64)
+	league, ok := a.leagueFromRequest(w, r)
+	if !ok {
+		return
+	}
+
+	if err := r.ParseForm(); err != nil {
+		a.clientError(w, http.StatusBadRequest)
+		return
+	}
+
+	// TODO: derive other fields from the user form then you dont need this rounds query even
+	rounds, err := a.q.ListRoundsByLeague(r.Context(), league.LeagueID)
+	if err != nil {
+		a.serverError(w, r, err)
+		return
+	}
+	form := views.RoundForm{
+		Theme:              strings.TrimSpace(r.PostForm.Get("theme")),
+		Position:           int64(len(rounds) + 1),
+		SubmissionDeadline: time.Now(),
+		VotingDeadline:     time.Now(),
+	}
+
+	// TODO: add checks on the other values
+	form.CheckField(validator.NotBlank(form.Theme), "theme", "Theme is required")
+
+	if !form.Valid() {
+		a.renderLeague(w, r, http.StatusUnprocessableEntity, league, form)
+		return
+	}
+
+	if _, err := a.q.CreateRound(r.Context(), db.CreateRoundParams{
+		LeagueID:           league.LeagueID,
+		Theme:              form.Theme,
+		Position:           form.Position,
+		SubmissionDeadline: dateToISOString(form.SubmissionDeadline),
+		VotingDeadline:     dateToISOString(form.VotingDeadline),
+	}); err != nil {
+		a.serverError(w, r, err)
+		return
+	}
+
+	http.Redirect(w, r, fmt.Sprintf("/leagues/%d", league.LeagueID), http.StatusSeeOther)
+}
+
+// The round id is globally unique; but we need to check that the
+// current user has the correct permissions to access the round
+func (a *app) showRound(w http.ResponseWriter, r *http.Request) {
+	id, err := strconv.ParseInt(r.PathValue("id"), 10, 64)
 	if err != nil {
 		a.clientError(w, http.StatusUnprocessableEntity)
 		return
 	}
-	// TODO: VERY TEMPORARY
-	round, err := a.q.CreateRound(r.Context(), db.CreateRoundParams{
-		LeagueID:           leagueID,
-		Theme:              "theme",
-		Position:           1,
-		SubmissionDeadline: sql.NullString{},
-		VotingDeadline:     sql.NullString{},
-	})
+	round, err := a.q.GetRound(r.Context(), id)
 	if err != nil {
-		a.serverError(w, r, err)
+		a.clientError(w, http.StatusNotFound)
 		return
 	}
 
-	fmt.Fprintf(w, "Round created: %d %s\n", round.RoundID, round.Theme)
+	fmt.Fprintf(w, "Round %d: %s in league %d\n", round.RoundID, round.Theme, round.LeagueID)
 }
 
 func (a *app) listRoundsInLeague(w http.ResponseWriter, r *http.Request) {
@@ -96,19 +157,77 @@ func (a *app) listRoundsInLeague(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-// The round id is globally unique; but we need to check that the
-// current user has the correct permissions to access the round
-func (a *app) showRound(w http.ResponseWriter, r *http.Request) {
-	id, err := strconv.ParseInt(r.PathValue("id"), 10, 64)
-	if err != nil {
-		a.clientError(w, http.StatusUnprocessableEntity)
+func (a *app) newSong(w http.ResponseWriter, r *http.Request) {
+	views.NewSong(views.SongForm{}).Render(r.Context(), w)
+}
+
+func (a *app) createSong(w http.ResponseWriter, r *http.Request) {
+	if err := r.ParseForm(); err != nil {
+		a.clientError(w, http.StatusBadRequest)
 		return
 	}
-	round, err := a.q.GetRound(r.Context(), id)
+
+	form := views.SongForm{
+		Title:  strings.TrimSpace(r.PostForm.Get("title")),
+		Artist: strings.TrimSpace(r.PostForm.Get("artist")),
+		URL:    strings.TrimSpace(r.PostForm.Get("url")),
+	}
+
+	form.CheckField(validator.NotBlank(form.Title), "title", "Title is required")
+	form.CheckField(validator.NotBlank(form.Artist), "artist", "Artist is required")
+	if validator.NotBlank(form.URL) {
+		form.CheckField(validator.ValidHTTPURL(form.URL), "url", "Enter a link starting with http:// or https://")
+	}
+
+	if !form.Valid() {
+		w.WriteHeader(http.StatusUnprocessableEntity)
+		views.NewSong(form).Render(r.Context(), w)
+		return
+	}
+
+	link := sql.NullString{String: form.URL, Valid: form.URL != ""}
+	song, err := a.q.CreateSong(r.Context(), db.CreateSongParams{Title: form.Title, Artist: form.Artist, Url: link})
 	if err != nil {
 		a.serverError(w, r, err)
 		return
 	}
 
-	fmt.Fprintf(w, "Round %d: %s in league %d\n", round.RoundID, round.Theme, round.LeagueID)
+	redirectURL := fmt.Sprintf("/songs/%d", song.SongID)
+	http.Redirect(w, r, redirectURL, http.StatusSeeOther)
+}
+
+func (a *app) showSong(w http.ResponseWriter, r *http.Request) {
+	id, err := strconv.ParseInt(r.PathValue("id"), 10, 64)
+	if err != nil {
+		a.clientError(w, http.StatusUnprocessableEntity)
+		return
+	}
+	song, err := a.q.GetSong(r.Context(), id)
+	if err != nil {
+		a.clientError(w, http.StatusNotFound)
+		return
+	}
+
+	fmt.Fprintf(w, "Song: %s\nBy: %s\n", song.Title, song.Artist)
+	if song.Url.Valid {
+		fmt.Fprintf(w, "Link: %s", song.Url.String)
+	}
+}
+
+func (a *app) leagueFromRequest(w http.ResponseWriter, r *http.Request) (db.League, bool) {
+	id, err := strconv.ParseInt(r.PathValue("id"), 10, 64)
+	if err != nil {
+		a.clientError(w, http.StatusNotFound)
+		return db.League{}, false
+	}
+	league, err := a.q.GetLeague(r.Context(), id)
+	if err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			a.clientError(w, http.StatusNotFound)
+		} else {
+			a.serverError(w, r, err)
+		}
+		return db.League{}, false
+	}
+	return league, true
 }

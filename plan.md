@@ -26,6 +26,5 @@ Votes(round_id, song_id, user_id, song_rank)
 
 
 # Steps:
-- templ for html in the web pages
 - enhance the templ pages with [htmx](https://templ.guide/server-side-rendering/htmx)
 

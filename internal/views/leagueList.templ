@@ -1,0 +1,15 @@
+package views
+
+import "mshocrylas.com/music-league/internal/db"
+import "fmt"
+
+templ LeagueList(leagues []db.League) {
+	@Base("Leagues") {
+		<h1>Leagues</h1>
+		<ul>
+			for _, league := range leagues {
+				<li><a href={ fmt.Sprintf("/leagues/%d", league.LeagueID) }>{ league.Name }</a></li>
+			}
+		</ul>
+	}
+}

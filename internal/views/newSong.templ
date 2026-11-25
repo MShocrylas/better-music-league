@@ -1,0 +1,38 @@
+package views
+
+import "mshocrylas.com/music-league/internal/validator"
+
+type SongForm struct {
+	Title, Artist, URL string
+	validator.Validator
+}
+
+templ NewSong(form SongForm) {
+	@Base("Add a song") {
+		<h1>Add a song</h1>
+		<form action="/songs" method="post">
+			<div>
+				<label for="title">Title:</label>
+				<input type="text" name="title" id="title" value={ form.Title } required/>
+				if msg, ok := form.FieldErrors["title"]; ok {
+					<p>{ msg }</p>
+				}
+			</div>
+			<div>
+				<label for="artist">Artist:</label>
+				<input type="text" name="artist" id="artist" value={ form.Artist } required/>
+				if msg, ok := form.FieldErrors["artist"]; ok {
+					<p>{ msg }</p>
+				}
+			</div>
+			<div>
+				<label for="url">Link:</label>
+				<input type="url" name="url" id="url" value={ form.URL }/>
+				if msg, ok := form.FieldErrors["url"]; ok {
+					<p>{ msg }</p>
+				}
+			</div>
+			<button type="submit">Create Song</button>
+		</form>
+	}
+}

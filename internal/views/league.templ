@@ -1,0 +1,17 @@
+package views
+
+import "mshocrylas.com/music-league/internal/db"
+
+type LeaguePage struct {
+	League db.League
+	Rounds []db.Round
+	Form   RoundForm
+}
+
+templ League(p LeaguePage) {
+	@Base(p.League.Name) {
+		<h1>{ p.League.Name }</h1>
+		@RoundList(p.Rounds)
+		@NewRound(p.League.LeagueID, p.Form)
+	}
+}
