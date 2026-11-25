@@ -9,9 +9,7 @@
 # Build output
 /bin/
 /dist/
-/music-league
 *.exe
-*_templ.go
 
 # Test and coverage output
 *.test
