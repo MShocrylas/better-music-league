@@ -8,6 +8,7 @@ tool (
 )
 
 require (
+	github.com/a-h/templ v0.3.1118
 	github.com/justinas/alice v1.2.0
 	github.com/pressly/goose/v3 v3.30.1
 	modernc.org/sqlite v1.62.0
@@ -17,7 +18,6 @@ require (
 	cel.dev/expr v0.25.3 // indirect
 	filippo.io/edwards25519 v1.2.0 // indirect
 	github.com/a-h/parse v0.0.42 // indirect
-	github.com/a-h/templ v0.3.1118 // indirect
 	github.com/andybalholm/brotli v1.3.0 // indirect
 	github.com/antlr4-go/antlr/v4 v4.13.1 // indirect
 	github.com/cenkalti/backoff/v4 v4.3.0 // indirect
