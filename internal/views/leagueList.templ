@@ -1,7 +1,9 @@
 package views
 
-import "mshocrylas.com/music-league/internal/db"
-import "fmt"
+import (
+	"fmt"
+	"mshocrylas.com/music-league/internal/db"
+)
 
 templ LeagueList(leagues []db.League) {
 	@Base("Leagues") {

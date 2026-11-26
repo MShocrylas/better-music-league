@@ -125,6 +125,19 @@ func (a *app) createRound(w http.ResponseWriter, r *http.Request) {
 
 // The round id is globally unique; but we need to check that the
 // current user has the correct permissions to access the round
+// * This page should show different things depending on the "phase" of the round.
+// Submitting, Voting, or Results
+// "Submitting" shows nothing except a form for the user to submit a song for the round
+// once the user has submitted, this is indicated. Maybe they can revise their choice while
+// the round is still waiting on others to submit.
+// "Voting" shows everyone's submitted song choice, ideally in some random/anonymized order
+// The page should be a form where the user ranks every choice from favorite to least.
+// Once they submit their votes, they can probably see a results-in-progress sort of page.
+// Or maybe not, TBD.
+// TODO: Add the ability to leave a comment with a vote, that's like the best part.
+// "Results" after everyone has voted, final results are tallied and the results page is shown.
+// All submissions are displayed ranked from highest to lowest rank, along with how each person
+// voted on the individual songs and what their comment was if they left one.
 func (a *app) showRound(w http.ResponseWriter, r *http.Request) {
 	id, err := strconv.ParseInt(r.PathValue("id"), 10, 64)
 	if err != nil {

@@ -1,11 +1,14 @@
 package views
 
-import "mshocrylas.com/music-league/internal/db"
+import (
+	"fmt"
+	"mshocrylas.com/music-league/internal/db"
+)
 
 templ RoundList(rounds []db.Round) {
 	<ol>
 		for _, round := range rounds {
-			<li>{ round.Theme }</li>
+			<li><a href={ fmt.Sprintf("/rounds/%d", round.RoundID) }>{ round.Theme }</a></li>
 		}
 	</ol>
 }

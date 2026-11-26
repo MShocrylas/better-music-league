@@ -9,9 +9,11 @@ package views
 import "github.com/a-h/templ"
 import templruntime "github.com/a-h/templ/runtime"
 
-import "mshocrylas.com/music-league/internal/validator"
-import "time"
-import "fmt"
+import (
+	"fmt"
+	"mshocrylas.com/music-league/internal/validator"
+	"time"
+)
 
 type RoundForm struct {
 	Theme              string
@@ -45,7 +47,7 @@ func NewRound(leagueID int64, form RoundForm) templ.Component {
 		var templ_7745c5c3_Var2 string
 		templ_7745c5c3_Var2, templ_7745c5c3_Err = templruntime.NewAttributeExpression(fmt.Sprintf("/leagues/%d/rounds", leagueID)).ResolveURL(ctx)
 		if templ_7745c5c3_Err != nil {
-			return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/views/newRound.templ`, Line: 16, Col: 59}
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/views/newRound.templ`, Line: 18, Col: 59}
 		}
 		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ_7745c5c3_Var2)
 		if templ_7745c5c3_Err != nil {
@@ -58,7 +60,7 @@ func NewRound(leagueID int64, form RoundForm) templ.Component {
 		var templ_7745c5c3_Var3 string
 		templ_7745c5c3_Var3, templ_7745c5c3_Err = templruntime.NewAttributeExpression(form.Theme).Resolve(ctx)
 		if templ_7745c5c3_Err != nil {
-			return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/views/newRound.templ`, Line: 19, Col: 64}
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/views/newRound.templ`, Line: 21, Col: 64}
 		}
 		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ_7745c5c3_Var3)
 		if templ_7745c5c3_Err != nil {
@@ -76,7 +78,7 @@ func NewRound(leagueID int64, form RoundForm) templ.Component {
 			var templ_7745c5c3_Var4 string
 			templ_7745c5c3_Var4, templ_7745c5c3_Err = templ.JoinStringErrs(msg)
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/views/newRound.templ`, Line: 21, Col: 12}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/views/newRound.templ`, Line: 23, Col: 12}
 			}
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var4))
 			if templ_7745c5c3_Err != nil {
