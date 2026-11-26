@@ -15,7 +15,7 @@ import (
 )
 
 func (a *app) home(w http.ResponseWriter, r *http.Request) {
-	views.Base("Home").Render(r.Context(), w)
+	http.Redirect(w, r, "/login", http.StatusSeeOther)
 }
 
 func (a *app) showLogin(w http.ResponseWriter, r *http.Request) {
@@ -150,7 +150,7 @@ func (a *app) showRound(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	fmt.Fprintf(w, "Round %d: %s in league %d\n", round.RoundID, round.Theme, round.LeagueID)
+	views.Round(round).Render(r.Context(), w)
 }
 
 func (a *app) listRoundsInLeague(w http.ResponseWriter, r *http.Request) {
@@ -221,10 +221,7 @@ func (a *app) showSong(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	fmt.Fprintf(w, "Song: %s\nBy: %s\n", song.Title, song.Artist)
-	if song.Url.Valid {
-		fmt.Fprintf(w, "Link: %s", song.Url.String)
-	}
+	views.Song(song).Render(r.Context(), w)
 }
 
 func (a *app) leagueFromRequest(w http.ResponseWriter, r *http.Request) (db.League, bool) {

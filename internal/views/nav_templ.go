@@ -26,7 +26,7 @@ func Nav() templ.Component {
 		}
 		ctx = templ.InitializeContext(ctx)
 		ctx = templ.ClearChildren(ctx)
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 1, "<nav><a href=\"/\">Music League</a> <a href=\"/leagues\">All Leagues</a> <a href=\"/songs/new\">Create New Song</a></nav>")
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 1, "<nav><ul><li><a href=\"/\">Music League</a></li></ul><ul><li><a href=\"/leagues\">All Leagues</a></li><li><a href=\"/songs/new\">Create New Song</a></li></ul></nav>")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}

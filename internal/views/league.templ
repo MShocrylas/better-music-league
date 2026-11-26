@@ -10,10 +10,10 @@ type LeaguePage struct {
 
 templ League(p LeaguePage) {
 	@Base(p.League.Name) {
-		<h1>{ p.League.Name }</h1>
+		<h1>League: "{ p.League.Name }"</h1>
 		<h2>Rounds</h2>
 		@RoundList(p.Rounds)
-		<h3>Add a new round:</h3>
+		<h3>Add a new round</h3>
 		@NewRound(p.League.LeagueID, p.Form)
 	}
 }

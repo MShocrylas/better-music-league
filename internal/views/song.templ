@@ -1,0 +1,14 @@
+package views
+
+import "mshocrylas.com/music-league/internal/db"
+
+templ Song(song db.Song) {
+	@Base("Song") {
+		<h1>Song</h1>
+		<p>Title: "{ song.Title }"</p>
+		<p>Artist: "{ song.Artist }"</p>
+		if song.Url.Valid {
+			<p>Link: "{ song.Url.String }"</p>
+		}
+	}
+}

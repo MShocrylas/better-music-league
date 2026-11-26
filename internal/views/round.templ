@@ -1,0 +1,42 @@
+package views
+
+import (
+	"fmt"
+	"mshocrylas.com/music-league/internal/db"
+)
+
+type song struct {
+	Title  string
+	Artist string
+	URL    string
+}
+
+var songs = []song{
+	{"Here's Where the Story Ends", "The Sundays", ""},
+	{"Hideous Towns", "The Sundays", ""},
+	{"Wild Horses", "The Sundays", ""},
+}
+
+templ Round(round db.Round) {
+	@Base("Round") {
+		<nav aria-label="breadcrumb">
+			<ul>
+				<li><a href={ fmt.Sprintf("/leagues/%d", round.LeagueID) }>League</a></li>
+				<li>{ round.Theme }</li>
+			</ul>
+		</nav>
+		<h1>Round Theme: "{ round.Theme }"</h1>
+		// Show results or submit form or voting form
+		<h2>Songs:</h2>
+		<ol>
+			for _, s := range songs {
+				<li>
+					<article>
+						<p><b>{ s.Title }</b></p>
+						<small><i>{ s.Artist }</i></small>
+					</article>
+				</li>
+			}
+		</ol>
+	}
+}

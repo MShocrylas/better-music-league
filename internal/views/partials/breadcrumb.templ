@@ -1,0 +1,23 @@
+package views
+
+type Crumb struct {
+	Label string
+	URL   string
+}
+
+// TODO: unused so far
+templ Breadcrumb(crumbs []Crumb) {
+	<nav aria-label="breadcrumb">
+		<ol>
+			for _, c := range crumbs {
+				<li>
+					if c.URL != "" {
+						<a href={ c.URL }>{ c.Label }</a>
+					} else {
+						{ c.Label }
+					}
+				</li>
+			}
+		</ol>
+	</nav>
+}

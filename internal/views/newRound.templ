@@ -16,13 +16,10 @@ type RoundForm struct {
 
 templ NewRound(leagueID int64, form RoundForm) {
 	<form action={ fmt.Sprintf("/leagues/%d/rounds", leagueID) } method="post">
-		<div>
-			<label for="theme">Theme: </label>
-			<input type="text" name="theme" id="theme" value={ form.Theme } required/>
-			if msg, ok := form.FieldErrors["theme"]; ok {
-				<p>{ msg }</p>
-			}
-		</div>
+		<label>
+			Theme: 
+			@textInput("text", "theme", form.Theme, form.FieldErrors, true)
+		</label>
 		<button type="submit">Add Round</button>
 	</form>
 }
